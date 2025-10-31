@@ -48,6 +48,9 @@ Front-end run on local
 ## Current Features
 
 - Health check endpoint
-- Basic frontend that connects to backend
+- Market data provider abstraction (mock provider implemented)
+- Symbols endpoint (`GET /api/symbols`)
+- Latest quotes endpoint (`GET /api/quotes/latest?symbol=SYMBOL`)
+- Watchlist page with real-time price polling
 - Configuration management via environment variables
 

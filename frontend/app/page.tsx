@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 interface HealthResponse {
   status: string
@@ -38,7 +39,7 @@ export default function Home() {
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold mb-8">Market Data Dashboard</h1>
         
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-2xl font-semibold mb-4">Backend Status</h2>
           
           {loading && (
@@ -58,6 +59,16 @@ export default function Home() {
               <p className="text-sm text-gray-600">Service: {health.service}</p>
             </div>
           )}
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-2xl font-semibold mb-4">Navigation</h2>
+          <Link
+            href="/watchlist"
+            className="inline-block bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            Go to Watchlist →
+          </Link>
         </div>
       </div>
     </main>
