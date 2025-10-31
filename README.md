@@ -61,6 +61,11 @@ Front-end run on local
 - P&L calculation (realized and unrealized)
 - Journal and P&L UI
 - SQLite database persistence
+- Polygon REST provider for equities (polling)
+- Mixed provider mode (Binance WS + Polygon REST)
+- Alpaca paper trading integration (optional)
+- Charts with price lines, EMA, and RSI indicators
+- Prometheus metrics endpoint
 - Configuration management via environment variables
 
 ### Providers
@@ -68,6 +73,11 @@ Front-end run on local
 - **Mock Provider**: Random walk prices (default)
 - **Binance Provider**: Live crypto prices via WebSocket (no API key required)
   - Set `DATA_PROVIDER=binance` in `.env` to enable
+- **Polygon Provider**: Equities snapshots via REST (free tier, requires API key)
+  - Set `DATA_PROVIDER=polygon` and `POLYGON_API_KEY=your_key` in `.env`
+- **Mixed Provider**: Combines Binance (crypto) and Polygon (equities)
+  - Set `DATA_PROVIDER=mixed` in `.env` to enable
+  - Routes symbols ending with `USDT` to Binance, others to Polygon
 
 ### Alerts
 

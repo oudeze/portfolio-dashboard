@@ -6,6 +6,8 @@ from app.config import settings
 from app.providers.base import IDataProvider
 from app.providers.binance import BinanceProvider
 from app.providers.mock import MockProvider
+from app.providers.mixed import MixedProvider
+from app.providers.polygon import PolygonProvider
 
 
 def create_provider() -> IDataProvider:
@@ -22,11 +24,9 @@ def create_provider() -> IDataProvider:
     elif provider_type == "binance":
         return BinanceProvider()
     elif provider_type == "polygon":
-        # Will be implemented in Phase 5
-        raise NotImplementedError("Polygon provider not yet implemented")
+        return PolygonProvider()
     elif provider_type == "mixed":
-        # Will be implemented in Phase 5
-        raise NotImplementedError("Mixed provider not yet implemented")
+        return MixedProvider()
     else:
         # Default to mock
         return MockProvider()
