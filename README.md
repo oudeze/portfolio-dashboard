@@ -29,7 +29,6 @@ cp .env.example .env
 uvicorn main:app --reload --port 8000
 ```
 
-Backend will be available at http://localhost:8000
 
 ### Frontend
 
@@ -44,7 +43,7 @@ npm install
 npm run dev
 ```
 
-Frontend will be available at http://localhost:3000
+Front-end run on local 
 
 ## Current Features
 
