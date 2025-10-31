@@ -4,11 +4,13 @@ Alert management endpoints.
 
 from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
+from app.database import get_db
 from app.models import AlertRule
-from app.services.alert_storage import alert_storage
+from app.services.alert_storage import AlertStorage
 from app.services.slack_notifier import SlackNotifier
 
 router = APIRouter()
@@ -32,7 +34,7 @@ class UpdateAlertRequest(BaseModel):
 
 
 @router.post("", response_model=AlertRule, status_code=201)
-async def create_alert(request: CreateAlertRequest):
+async def create_alert(request: CreateAlertRequest, db: Session = Depends(get_db)):
     """
     Create a new alert rule.
     
@@ -50,7 +52,8 @@ async def create_alert(request: CreateAlertRequest):
             detail=f"Invalid alert kind. Must be one of: {valid_kinds}"
         )
     
-    alert = alert_storage.create(
+    storage = AlertStorage(db)
+    alert = storage.create(
         symbol=request.symbol,
         kind=request.kind,
         threshold=request.threshold,
@@ -62,50 +65,57 @@ async def create_alert(request: CreateAlertRequest):
 
 @router.get("", response_model=List[AlertRule])
 async def list_alerts(
-    symbol: Optional[str] = Query(None, description="Filter by symbol")
+    symbol: Optional[str] = Query(None, description="Filter by symbol"),
+    db: Session = Depends(get_db)
 ):
     """
     List all alert rules.
     
     Args:
         symbol: Optional symbol filter
+        db: Database session
         
     Returns:
         List of alert rules
     """
-    return alert_storage.list(symbol=symbol)
+    storage = AlertStorage(db)
+    return storage.list(symbol=symbol)
 
 
 @router.get("/{alert_id}", response_model=AlertRule)
-async def get_alert(alert_id: str):
+async def get_alert(alert_id: str, db: Session = Depends(get_db)):
     """
     Get alert by ID.
     
     Args:
         alert_id: Alert ID
+        db: Database session
         
     Returns:
         Alert rule
     """
-    alert = alert_storage.get(alert_id)
+    storage = AlertStorage(db)
+    alert = storage.get(alert_id)
     if not alert:
         raise HTTPException(status_code=404, detail="Alert not found")
     return alert
 
 
 @router.patch("/{alert_id}", response_model=AlertRule)
-async def update_alert(alert_id: str, request: UpdateAlertRequest):
+async def update_alert(alert_id: str, request: UpdateAlertRequest, db: Session = Depends(get_db)):
     """
     Update alert rule.
     
     Args:
         alert_id: Alert ID
         request: Update request
+        db: Database session
         
     Returns:
         Updated alert rule
     """
-    alert = alert_storage.get(alert_id)
+    storage = AlertStorage(db)
+    alert = storage.get(alert_id)
     if not alert:
         raise HTTPException(status_code=404, detail="Alert not found")
     
@@ -116,32 +126,35 @@ async def update_alert(alert_id: str, request: UpdateAlertRequest):
     if request.threshold is not None:
         updates["threshold"] = request.threshold
     
-    updated = alert_storage.update(alert_id, **updates)
+    updated = storage.update(alert_id, **updates)
     return updated
 
 
 @router.delete("/{alert_id}", status_code=204)
-async def delete_alert(alert_id: str):
+async def delete_alert(alert_id: str, db: Session = Depends(get_db)):
     """
     Delete alert rule.
     
     Args:
         alert_id: Alert ID
+        db: Database session
     """
-    deleted = alert_storage.delete(alert_id)
+    storage = AlertStorage(db)
+    deleted = storage.delete(alert_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Alert not found")
 
 
 @router.post("/{alert_id}/test", status_code=200)
-async def test_alert(alert_id: str):
+async def test_alert(alert_id: str, db: Session = Depends(get_db)):
     """
     Test alert by sending a test notification.
     
     Args:
         alert_id: Alert ID
     """
-    alert = alert_storage.get(alert_id)
+    storage = AlertStorage(db)
+    alert = storage.get(alert_id)
     if not alert:
         raise HTTPException(status_code=404, detail="Alert not found")
     

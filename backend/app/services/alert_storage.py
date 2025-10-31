@@ -1,22 +1,23 @@
 """
-In-memory alert storage.
+Database-backed alert storage.
 """
 
 import uuid
-from typing import Dict, List, Optional
+from typing import List, Optional
+from sqlalchemy.orm import Session
 
 from app.models import AlertRule
+from app.db_models import AlertRuleDB
 
 
 class AlertStorage:
     """
-    In-memory storage for alert rules.
-    Will be replaced with database in Phase 4.
+    Database storage for alert rules.
     """
     
-    def __init__(self):
-        """Initialize alert storage."""
-        self._alerts: Dict[str, AlertRule] = {}
+    def __init__(self, db: Session):
+        """Initialize alert storage with database session."""
+        self.db = db
     
     def create(self, symbol: str, kind: str, threshold: float, enabled: bool = True) -> AlertRule:
         """
@@ -32,15 +33,18 @@ class AlertStorage:
             Created alert rule
         """
         alert_id = f"alert_{uuid.uuid4().hex[:8]}"
-        alert = AlertRule(
+        db_alert = AlertRuleDB(
             id=alert_id,
             symbol=symbol,
             kind=kind,
             threshold=threshold,
             enabled=enabled
         )
-        self._alerts[alert_id] = alert
-        return alert
+        self.db.add(db_alert)
+        self.db.commit()
+        self.db.refresh(db_alert)
+        
+        return self._db_to_model(db_alert)
     
     def get(self, alert_id: str) -> Optional[AlertRule]:
         """
@@ -52,7 +56,10 @@ class AlertStorage:
         Returns:
             Alert rule or None if not found
         """
-        return self._alerts.get(alert_id)
+        db_alert = self.db.query(AlertRuleDB).filter(AlertRuleDB.id == alert_id).first()
+        if not db_alert:
+            return None
+        return self._db_to_model(db_alert)
     
     def list(self, symbol: Optional[str] = None) -> List[AlertRule]:
         """
@@ -64,10 +71,12 @@ class AlertStorage:
         Returns:
             List of alert rules
         """
-        alerts = list(self._alerts.values())
+        query = self.db.query(AlertRuleDB)
         if symbol:
-            alerts = [a for a in alerts if a.symbol == symbol]
-        return alerts
+            query = query.filter(AlertRuleDB.symbol == symbol)
+        
+        db_alerts = query.all()
+        return [self._db_to_model(alert) for alert in db_alerts]
     
     def update(self, alert_id: str, **kwargs) -> Optional[AlertRule]:
         """
@@ -80,16 +89,19 @@ class AlertStorage:
         Returns:
             Updated alert rule or None if not found
         """
-        alert = self._alerts.get(alert_id)
-        if not alert:
+        db_alert = self.db.query(AlertRuleDB).filter(AlertRuleDB.id == alert_id).first()
+        if not db_alert:
             return None
         
         # Update fields
         for key, value in kwargs.items():
-            if hasattr(alert, key):
-                setattr(alert, key, value)
+            if hasattr(db_alert, key):
+                setattr(db_alert, key, value)
         
-        return alert
+        self.db.commit()
+        self.db.refresh(db_alert)
+        
+        return self._db_to_model(db_alert)
     
     def delete(self, alert_id: str) -> bool:
         """
@@ -101,10 +113,13 @@ class AlertStorage:
         Returns:
             True if deleted, False if not found
         """
-        if alert_id in self._alerts:
-            del self._alerts[alert_id]
-            return True
-        return False
+        db_alert = self.db.query(AlertRuleDB).filter(AlertRuleDB.id == alert_id).first()
+        if not db_alert:
+            return False
+        
+        self.db.delete(db_alert)
+        self.db.commit()
+        return True
     
     def get_by_symbol(self, symbol: str) -> List[AlertRule]:
         """
@@ -116,12 +131,20 @@ class AlertStorage:
         Returns:
             List of enabled alert rules
         """
-        return [
-            alert for alert in self._alerts.values()
-            if alert.symbol == symbol and alert.enabled
-        ]
-
-
-# Global storage instance
-alert_storage = AlertStorage()
+        db_alerts = self.db.query(AlertRuleDB).filter(
+            AlertRuleDB.symbol == symbol,
+            AlertRuleDB.enabled == True
+        ).all()
+        return [self._db_to_model(alert) for alert in db_alerts]
+    
+    @staticmethod
+    def _db_to_model(db_alert: AlertRuleDB) -> AlertRule:
+        """Convert database model to Pydantic model."""
+        return AlertRule(
+            id=db_alert.id,
+            symbol=db_alert.symbol,
+            kind=db_alert.kind,
+            threshold=db_alert.threshold,
+            enabled=db_alert.enabled
+        )
 

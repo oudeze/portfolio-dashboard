@@ -63,18 +63,30 @@ export default function Home() {
 
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-2xl font-semibold mb-4">Navigation</h2>
-          <div className="flex gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Link
               href="/watchlist"
-              className="inline-block bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
+              className="inline-block bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors text-center"
             >
               Watchlist →
             </Link>
             <Link
               href="/alerts"
-              className="inline-block bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors"
+              className="inline-block bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors text-center"
             >
               Alerts →
+            </Link>
+            <Link
+              href="/journal"
+              className="inline-block bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 transition-colors text-center"
+            >
+              Journal →
+            </Link>
+            <Link
+              href="/pnl"
+              className="inline-block bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition-colors text-center"
+            >
+              P&L →
             </Link>
           </div>
         </div>

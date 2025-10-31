@@ -50,3 +50,69 @@ class AlertRule(BaseModel):
             }
         }
 
+
+class JournalEntry(BaseModel):
+    """Trade journal entry model."""
+    id: str = Field(..., description="Unique entry ID")
+    ts: str = Field(..., description="Timestamp in ISO format")
+    symbol: str = Field(..., description="Ticker symbol")
+    side: str = Field(..., description="Trade side: buy or sell")
+    qty: float = Field(..., description="Quantity")
+    price: float = Field(..., description="Price")
+    notes: Optional[str] = Field(None, description="Optional notes")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "id": "journal_123",
+                "ts": "2024-01-01T12:00:00Z",
+                "symbol": "BTCUSDT",
+                "side": "buy",
+                "qty": 0.5,
+                "price": 43000.0,
+                "notes": "Entry point"
+            }
+        }
+
+
+class Position(BaseModel):
+    """Position model."""
+    symbol: str = Field(..., description="Ticker symbol")
+    qty: float = Field(..., description="Position quantity")
+    avg_price: float = Field(..., description="Average entry price")
+    realized_pnl: float = Field(..., description="Realized P&L")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "symbol": "BTCUSDT",
+                "qty": 0.5,
+                "avg_price": 43000.0,
+                "realized_pnl": 500.0
+            }
+        }
+
+
+class PnLSummary(BaseModel):
+    """P&L summary model."""
+    symbol: str = Field(..., description="Ticker symbol")
+    qty: float = Field(..., description="Position quantity")
+    avg_price: float = Field(..., description="Average entry price")
+    current_price: float = Field(..., description="Current market price")
+    unrealized_pnl: float = Field(..., description="Unrealized P&L")
+    realized_pnl: float = Field(..., description="Realized P&L")
+    total_pnl: float = Field(..., description="Total P&L (realized + unrealized)")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "symbol": "BTCUSDT",
+                "qty": 0.5,
+                "avg_price": 43000.0,
+                "current_price": 43500.0,
+                "unrealized_pnl": 250.0,
+                "realized_pnl": 500.0,
+                "total_pnl": 750.0
+            }
+        }
+

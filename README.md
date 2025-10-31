@@ -56,6 +56,11 @@ Front-end run on local
 - Alert system with price triggers (price_above, price_below, pct_move)
 - Slack webhook notifications for triggered alerts
 - Alerts management UI (create, enable/disable, delete, test)
+- Trade journal with buy/sell entries
+- Position tracking with FIFO average price
+- P&L calculation (realized and unrealized)
+- Journal and P&L UI
+- SQLite database persistence
 - Configuration management via environment variables
 
 ### Providers

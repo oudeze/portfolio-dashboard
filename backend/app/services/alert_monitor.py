@@ -7,8 +7,11 @@ from typing import AsyncIterator
 
 from app.models import Quote
 from app.providers.base import IDataProvider
+from sqlalchemy.orm import Session
+
+from app.database import SessionLocal
 from app.services.alert_evaluator import AlertEvaluator
-from app.services.alert_storage import alert_storage
+from app.services.alert_storage import AlertStorage
 from app.services.slack_notifier import SlackNotifier
 
 
@@ -53,23 +56,29 @@ class AlertMonitor:
         Args:
             quote: Current quote
         """
-        # Get enabled alerts for this symbol
-        alerts = alert_storage.get_by_symbol(quote.symbol)
-        
-        if not alerts:
-            return
-        
-        # Evaluate alerts
-        triggered = self.evaluator.evaluate(quote, alerts)
-        
-        # Send notifications for triggered alerts
-        for alert in triggered:
-            # Run notification in background
-            task = asyncio.create_task(
-                self._send_notification(alert, quote)
-            )
-            self._active_tasks.add(task)
-            task.add_done_callback(self._active_tasks.discard)
+        # Get database session
+        db = SessionLocal()
+        try:
+            # Get enabled alerts for this symbol
+            storage = AlertStorage(db)
+            alerts = storage.get_by_symbol(quote.symbol)
+            
+            if not alerts:
+                return
+            
+            # Evaluate alerts
+            triggered = self.evaluator.evaluate(quote, alerts)
+            
+            # Send notifications for triggered alerts
+            for alert in triggered:
+                # Run notification in background
+                task = asyncio.create_task(
+                    self._send_notification(alert, quote)
+                )
+                self._active_tasks.add(task)
+                task.add_done_callback(self._active_tasks.discard)
+        finally:
+            db.close()
     
     async def _send_notification(self, alert, quote: Quote):
         """
