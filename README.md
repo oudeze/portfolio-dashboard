@@ -53,6 +53,9 @@ Front-end run on local
 - Latest quotes endpoint (`GET /api/quotes/latest?symbol=SYMBOL`)
 - WebSocket endpoint (`/api/ws/quotes`) for real-time quotes
 - Watchlist page with WebSocket support for live crypto prices
+- Alert system with price triggers (price_above, price_below, pct_move)
+- Slack webhook notifications for triggered alerts
+- Alerts management UI (create, enable/disable, delete, test)
 - Configuration management via environment variables
 
 ### Providers
@@ -60,4 +63,11 @@ Front-end run on local
 - **Mock Provider**: Random walk prices (default)
 - **Binance Provider**: Live crypto prices via WebSocket (no API key required)
   - Set `DATA_PROVIDER=binance` in `.env` to enable
+
+### Alerts
+
+- **Alert Types**: Price above, price below, percentage move
+- **Notifications**: Slack webhook integration (optional)
+  - Set `SLACK_WEBHOOK_URL` in `.env` to enable
+  - Alerts are evaluated on incoming quotes from WebSocket stream
 

@@ -30,3 +30,23 @@ class Quote(BaseModel):
             }
         }
 
+
+class AlertRule(BaseModel):
+    """Alert rule model."""
+    id: str = Field(..., description="Unique alert ID")
+    symbol: str = Field(..., description="Ticker symbol to monitor")
+    kind: str = Field(..., description="Alert type: price_above, price_below, pct_move")
+    threshold: float = Field(..., description="Threshold value")
+    enabled: bool = Field(default=True, description="Whether alert is enabled")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "id": "alert_123",
+                "symbol": "BTCUSDT",
+                "kind": "price_above",
+                "threshold": 50000.0,
+                "enabled": True
+            }
+        }
+

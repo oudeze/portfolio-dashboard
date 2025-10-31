@@ -63,12 +63,20 @@ export default function Home() {
 
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-2xl font-semibold mb-4">Navigation</h2>
-          <Link
-            href="/watchlist"
-            className="inline-block bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            Go to Watchlist →
-          </Link>
+          <div className="flex gap-4">
+            <Link
+              href="/watchlist"
+              className="inline-block bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              Watchlist →
+            </Link>
+            <Link
+              href="/alerts"
+              className="inline-block bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors"
+            >
+              Alerts →
+            </Link>
+          </div>
         </div>
       </div>
     </main>

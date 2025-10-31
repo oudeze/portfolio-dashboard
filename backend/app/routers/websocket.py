@@ -9,6 +9,7 @@ from typing import Set
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from app.providers.factory import create_provider
+from app.services.alert_monitor import alert_monitor
 
 router = APIRouter()
 
@@ -70,10 +71,10 @@ async def websocket_quotes(websocket: WebSocket):
                             pass
                     
                     if active_subscriptions:
-                        # Start new stream task
+                        # Start new stream task with alert monitoring
                         stream_cancel = asyncio.Event()
                         stream_task = asyncio.create_task(
-                            stream_quotes(websocket, provider, active_subscriptions, stream_cancel)
+                            stream_quotes_with_alerts(websocket, provider, active_subscriptions, stream_cancel)
                         )
                 
                 elif action == "unsubscribe":
@@ -97,7 +98,7 @@ async def websocket_quotes(websocket: WebSocket):
                         
                         stream_cancel = asyncio.Event()
                         stream_task = asyncio.create_task(
-                            stream_quotes(websocket, provider, active_subscriptions, stream_cancel)
+                            stream_quotes_with_alerts(websocket, provider, active_subscriptions, stream_cancel)
                         )
                     elif not active_subscriptions and stream_task:
                         # Stop streaming if no subscriptions left
@@ -134,12 +135,16 @@ async def websocket_quotes(websocket: WebSocket):
         return
 
 
-async def stream_quotes(websocket, provider, subscriptions: Set[str], cancel_event: asyncio.Event):
+async def stream_quotes_with_alerts(websocket, provider, subscriptions: Set[str], cancel_event: asyncio.Event):
     """
-    Background task that streams quotes to the WebSocket.
+    Background task that streams quotes to the WebSocket and evaluates alerts.
     """
     try:
-        async for quote in provider.stream(list(subscriptions)):
+        # Use alert monitor to wrap the stream
+        async for quote in alert_monitor.monitor_quotes(
+            provider,
+            list(subscriptions)
+        ):
             # Check if cancelled
             if cancel_event.is_set():
                 break
