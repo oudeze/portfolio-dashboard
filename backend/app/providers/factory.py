@@ -4,6 +4,7 @@ Factory for creating data providers based on configuration.
 
 from app.config import settings
 from app.providers.base import IDataProvider
+from app.providers.binance import BinanceProvider
 from app.providers.mock import MockProvider
 
 
@@ -19,8 +20,7 @@ def create_provider() -> IDataProvider:
     if provider_type == "mock":
         return MockProvider()
     elif provider_type == "binance":
-        # Will be implemented in Phase 2
-        raise NotImplementedError("Binance provider not yet implemented")
+        return BinanceProvider()
     elif provider_type == "polygon":
         # Will be implemented in Phase 5
         raise NotImplementedError("Polygon provider not yet implemented")

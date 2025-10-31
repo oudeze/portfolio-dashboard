@@ -1,9 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Symbol, Quote } from '@/types/market'
+import { useWebSocket } from '@/hooks/useWebSocket'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const USE_WEBSOCKET = process.env.NEXT_PUBLIC_USE_WEBSOCKET !== 'false' // Default to true
 
 export default function WatchlistPage() {
   const [symbols, setSymbols] = useState<Symbol[]>([])
@@ -11,6 +13,20 @@ export default function WatchlistPage() {
   const [selectedSymbols, setSelectedSymbols] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // WebSocket quote handler
+  const handleQuote = useCallback((quote: Quote) => {
+    setQuotes((prev) => ({
+      ...prev,
+      [quote.symbol]: quote,
+    }))
+  }, [])
+
+  // WebSocket connection
+  const { connected: wsConnected, error: wsError } = useWebSocket(
+    USE_WEBSOCKET ? selectedSymbols : [],
+    handleQuote
+  )
 
   // Fetch available symbols on mount
   useEffect(() => {
@@ -34,9 +50,9 @@ export default function WatchlistPage() {
     fetchSymbols()
   }, [])
 
-  // Poll quotes for selected symbols
+  // Poll quotes for selected symbols (fallback when WebSocket not used)
   useEffect(() => {
-    if (selectedSymbols.length === 0) return
+    if (USE_WEBSOCKET || selectedSymbols.length === 0) return
 
     let intervalId: NodeJS.Timeout
 
@@ -143,6 +159,25 @@ export default function WatchlistPage() {
             ))}
           </div>
         </div>
+
+        {/* Connection status */}
+        {USE_WEBSOCKET && (
+          <div className="bg-white rounded-lg shadow p-4 mb-4">
+            <div className="flex items-center gap-2">
+              <div
+                className={`w-3 h-3 rounded-full ${
+                  wsConnected ? 'bg-green-500' : 'bg-red-500'
+                }`}
+              />
+              <span className="text-sm text-gray-600">
+                WebSocket: {wsConnected ? 'Connected' : 'Disconnected'}
+              </span>
+              {wsError && (
+                <span className="text-sm text-red-600 ml-2">{wsError}</span>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Quotes table */}
         <div className="bg-white rounded-lg shadow p-6">

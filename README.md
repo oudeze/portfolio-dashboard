@@ -48,9 +48,16 @@ Front-end run on local
 ## Current Features
 
 - Health check endpoint
-- Market data provider abstraction (mock provider implemented)
+- Market data provider abstraction (mock + Binance providers)
 - Symbols endpoint (`GET /api/symbols`)
 - Latest quotes endpoint (`GET /api/quotes/latest?symbol=SYMBOL`)
-- Watchlist page with real-time price polling
+- WebSocket endpoint (`/api/ws/quotes`) for real-time quotes
+- Watchlist page with WebSocket support for live crypto prices
 - Configuration management via environment variables
+
+### Providers
+
+- **Mock Provider**: Random walk prices (default)
+- **Binance Provider**: Live crypto prices via WebSocket (no API key required)
+  - Set `DATA_PROVIDER=binance` in `.env` to enable
 
