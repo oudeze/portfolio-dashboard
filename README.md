@@ -10,7 +10,7 @@ Personal trading dashboard built with FastAPI and Next.js.
 ```bash
 cd backend
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Mac
 ```
 
 2. Install dependencies:
